@@ -1,0 +1,30 @@
+{
+  "name": "Global",
+  "min_age": 18,
+  "citizenship_required": true,
+  "residency_required": true,
+  "authority": "National Electoral Commission",
+  "registration_required": true,
+  "registration_steps": [
+    "Visit your national electoral commission website or office",
+    "Provide proof of identity (national ID, passport, or birth certificate)",
+    "Provide proof of address (utility bill, government letter)",
+    "Complete the voter registration form",
+    "Wait for confirmation (usually 2-4 weeks)",
+    "Verify your registration status before election day"
+  ],
+  "voting_steps": [
+    "Check your voter registration status",
+    "Find your assigned polling station",
+    "Bring valid photo ID on election day",
+    "Arrive at the polling station during voting hours",
+    "Collect your ballot from election officials",
+    "Mark your ballot in a private voting booth",
+    "Submit your completed ballot",
+    "Receive your 'I Voted' stamp or sticker"
+  ],
+  "voting_hours": "Varies by country (typically 7am - 8pm)",
+  "id_required": true,
+  "notes": "Specific country data not available. Showing general election guidance. Please verify with your national electoral authority.",
+  "fallback": true
+}

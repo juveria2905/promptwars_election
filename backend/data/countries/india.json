@@ -1,0 +1,49 @@
+{
+  "name": "India",
+  "min_age": 18,
+  "citizenship_required": true,
+  "residency_required": true,
+  "authority": "Election Commission of India (ECI)",
+  "authority_website": "https://eci.gov.in",
+  "registration_required": true,
+  "registration_steps": [
+    "Visit the National Voters' Service Portal (voters.eci.gov.in)",
+    "Click on 'New Voter Registration' (Form 6)",
+    "Fill in your personal details: name, date of birth, address",
+    "Upload documents: Aadhaar card, passport photo, address proof",
+    "Submit the form online or visit your local BLO (Booth Level Officer)",
+    "Track your application status on the NVSP portal",
+    "Receive your EPIC (Voter ID Card) by post within 4-6 weeks"
+  ],
+  "voting_steps": [
+    "Download your Voter Slip from voterportal.eci.gov.in or Voter Helpline App",
+    "Locate your polling booth using the Voter Helpline App (1950)",
+    "Carry your EPIC (Voter ID) or any of 12 approved alternative IDs",
+    "Arrive at your polling booth during voting hours (7am - 6pm)",
+    "Join the queue and present your Voter Slip to the presiding officer",
+    "Get your finger marked with indelible ink",
+    "Collect your ballot and go to the EVM (Electronic Voting Machine)",
+    "Press the button next to your chosen candidate",
+    "Your vote is recorded with a beep and VVPAT slip shown for 7 seconds"
+  ],
+  "voting_hours": "7:00 AM to 6:00 PM (may vary by constituency)",
+  "id_required": true,
+  "approved_ids": [
+    "EPIC (Voter ID Card)",
+    "Aadhaar Card",
+    "Passport",
+    "Driving License",
+    "MNREGA Job Card",
+    "PAN Card",
+    "Service Identity Card with photo",
+    "Bank/Post Office Passbook with photo",
+    "Health Insurance Smart Card",
+    "Smart Card issued by RGI",
+    "Pension Document with photo",
+    "NPR Smart Card"
+  ],
+  "notes": "India uses Electronic Voting Machines (EVMs). Voters can check name on electoral roll via SMS: 'ECI <Voter ID Number>' to 1950.",
+  "diaspora_voting": false,
+  "postal_ballot": true,
+  "online_voting": false
+}

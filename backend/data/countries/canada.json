@@ -1,0 +1,32 @@
+{
+  "name": "Canada",
+  "min_age": 18,
+  "citizenship_required": true,
+  "residency_required": true,
+  "authority": "Elections Canada",
+  "authority_website": "https://www.elections.ca",
+  "registration_required": true,
+  "registration_steps": [
+    "Check if you're already registered at elections.ca (most Canadians are auto-registered)",
+    "Register online at elections.ca using your Social Insurance Number",
+    "Or register by mail using the Registration Form (Elections Canada website)",
+    "Or register in person at your local Elections Canada office",
+    "You can also register on election day at your polling station",
+    "Verify your registration and address before election day"
+  ],
+  "voting_steps": [
+    "Find your polling station on your Voter Information Card or at elections.ca",
+    "Bring your Voter Information Card AND one piece of ID showing name and address",
+    "Or bring two pieces of ID (one showing name and address)",
+    "Go to your polling station (usually 9:30am - 9:30pm local time)",
+    "Give your Voter Information Card and ID to election officials",
+    "Receive your official ballot",
+    "Go to a voting screen and mark an X next to your candidate",
+    "Fold the ballot and return it to the DRO to be placed in the ballot box"
+  ],
+  "voting_hours": "9:30 AM to 9:30 PM (local time, varies by time zone)",
+  "id_required": true,
+  "notes": "Canadian citizens living abroad who have been away less than 5 consecutive years can vote by special ballot. Elections Canada has a VIC (Voter Information Card) mailed to registered voters.",
+  "diaspora_voting": true,
+  "online_voting": false
+}

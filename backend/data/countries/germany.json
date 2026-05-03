@@ -1,0 +1,32 @@
+{
+  "name": "Germany",
+  "min_age": 18,
+  "citizenship_required": true,
+  "residency_required": true,
+  "authority": "Federal Returning Officer (Bundeswahlleiter)",
+  "authority_website": "https://www.bundeswahlleiter.de",
+  "registration_required": false,
+  "registration_steps": [
+    "Voter registration is automatic in Germany if you are registered as a resident",
+    "Register your residence at the local Registration Office (Einwohnermeldeamt) when you move",
+    "You will automatically be added to the electoral roll",
+    "About 6-8 weeks before the election, you'll receive a Wahlbenachrichtigung (voting notification card)",
+    "Check if your details are correct on the voting notification card",
+    "Contact your local Electoral Office if you did not receive a card"
+  ],
+  "voting_steps": [
+    "Find your polling station on your Wahlbenachrichtigung (voting notification card)",
+    "Bring your voting notification card and a valid ID (ID card or passport)",
+    "Go to your polling station on election day (8am - 6pm)",
+    "Present your voting notification card and ID to officials",
+    "Receive two ballot papers (first vote for direct candidate, second vote for party list)",
+    "Go to the polling booth",
+    "Mark an X on your chosen candidate (first ballot) and party (second ballot)",
+    "Fold both ballots and place them in the ballot box"
+  ],
+  "voting_hours": "8:00 AM to 6:00 PM",
+  "id_required": true,
+  "notes": "Germany uses a mixed-member proportional representation system. EU citizens residing in Germany can vote in European Parliament and local elections. Postal voting is widely available.",
+  "diaspora_voting": true,
+  "online_voting": false
+}

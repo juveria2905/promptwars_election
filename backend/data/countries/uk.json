@@ -1,0 +1,48 @@
+{
+  "name": "United Kingdom",
+  "min_age": 18,
+  "citizenship_required": false,
+  "residency_required": true,
+  "authority": "Electoral Commission",
+  "authority_website": "https://www.electoralcommission.org.uk",
+  "registration_required": true,
+  "eligible_citizens": ["British citizens", "Irish citizens", "Commonwealth citizens with leave to remain or indefinite leave"],
+  "registration_steps": [
+    "Register online at gov.uk/register-to-vote (takes about 5 minutes)",
+    "Provide your National Insurance number and date of birth",
+    "Select the type of vote: in person, by post, or by proxy",
+    "Deadline: usually 12 working days before an election",
+    "You must register at your current address",
+    "If you move, re-register at your new address",
+    "Check your registration at gov.uk/voter-registration-enquiries"
+  ],
+  "voting_steps": [
+    "Find your polling station using your Poll Card or at gov.uk",
+    "Since May 2023, you MUST bring a valid photo ID to vote",
+    "Accepted IDs: Passport, driving licence, Blue Badge, certain electoral identity documents",
+    "Go to your polling station on election day (7am - 10pm)",
+    "Give your name and address to polling station staff",
+    "Show your photo ID to staff",
+    "Receive your ballot paper",
+    "Go to a polling booth and mark your choice with an X",
+    "Fold the ballot and place it in the ballot box"
+  ],
+  "voting_hours": "7:00 AM to 10:00 PM",
+  "id_required": true,
+  "approved_ids": [
+    "UK or foreign passport",
+    "UK driving licence (full or provisional)",
+    "Blue Badge",
+    "Older Person's Bus Pass (funded by the government)",
+    "Disabled Person's Bus Pass",
+    "Oyster 60+ Card",
+    "Freedom Pass",
+    "Scottish National Entitlement Card",
+    "Electoral Identity Document (Northern Ireland)"
+  ],
+  "postal_voting": true,
+  "proxy_voting": true,
+  "notes": "Photo ID is now required to vote in person in Great Britain (introduced 2023). Apply for a free Voter Authority Certificate if you don't have accepted ID.",
+  "diaspora_voting": true,
+  "online_voting": false
+}

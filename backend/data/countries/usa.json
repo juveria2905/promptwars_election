@@ -1,0 +1,38 @@
+{
+  "name": "United States",
+  "min_age": 18,
+  "citizenship_required": true,
+  "residency_required": true,
+  "authority": "U.S. Election Assistance Commission (EAC)",
+  "authority_website": "https://www.eac.gov",
+  "registration_required": true,
+  "registration_steps": [
+    "Check your state's registration deadline (varies by state, usually 15-30 days before election)",
+    "Register online at vote.gov or your state's election website",
+    "You can also register by mail using the National Voter Registration Form",
+    "Or register in person at your DMV, public library, or election office",
+    "Provide your state driver's license/ID number or last 4 digits of SSN",
+    "Some states offer Same-Day Registration at the polls",
+    "Verify your registration at vote.gov/am-i-registered"
+  ],
+  "voting_steps": [
+    "Find your polling place at vote.gov or your state election website",
+    "Check if your state requires a photo ID (laws vary by state)",
+    "Know your state's ID requirements before election day",
+    "Arrive at your polling location during voting hours (typically 7am - 8pm)",
+    "Check in with poll workers and sign the poll book",
+    "Receive your ballot (paper ballot or touchscreen depending on county)",
+    "Vote in a private booth",
+    "Submit your ballot in the scanner or ballot box",
+    "You may receive an 'I Voted' sticker"
+  ],
+  "voting_hours": "Varies by state (typically 6:00 AM to 8:00 PM local time)",
+  "id_required": false,
+  "id_notes": "ID requirements vary by state. Some states require photo ID, others accept non-photo documents.",
+  "absentee_voting": true,
+  "early_voting": true,
+  "mail_voting": true,
+  "notes": "Voting laws vary significantly by state. Check your specific state's requirements at vote.gov. U.S. citizens living abroad can vote using UOCAVA.",
+  "diaspora_voting": true,
+  "online_voting": false
+}

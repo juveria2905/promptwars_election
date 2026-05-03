@@ -1,0 +1,34 @@
+{
+  "name": "Australia",
+  "min_age": 18,
+  "citizenship_required": true,
+  "residency_required": true,
+  "authority": "Australian Electoral Commission (AEC)",
+  "authority_website": "https://www.aec.gov.au",
+  "registration_required": true,
+  "compulsory_voting": true,
+  "registration_steps": [
+    "Enrol at aec.gov.au (compulsory for all eligible Australians aged 18+)",
+    "Click 'Enrol to vote' and provide your full name, date of birth, address",
+    "Provide your Australian citizenship details",
+    "Deadline: 7pm local time on the day the writs are issued (usually 1-2 days after election announced)",
+    "Update your enrolment if you move to a new address",
+    "Check your enrolment at aec.gov.au"
+  ],
+  "voting_steps": [
+    "You will receive a poll card showing your polling place",
+    "Attend your polling place on election day (or vote early at any AEC office)",
+    "No photo ID required — your name is checked against the roll",
+    "Give your full name and address to polling officials",
+    "Receive your ballot paper(s)",
+    "Go to a polling booth",
+    "For the House of Representatives: Number ALL boxes from 1 to the total number of candidates",
+    "For the Senate: Number at least 6 boxes above the line OR at least 12 boxes below the line",
+    "Fold and place your completed ballot(s) in the appropriate ballot box"
+  ],
+  "voting_hours": "8:00 AM to 6:00 PM",
+  "id_required": false,
+  "notes": "VOTING IS COMPULSORY in Australia. Failure to vote without a valid reason may result in a fine. Postal and pre-poll voting options are available. Australian citizens overseas must also enrol and vote.",
+  "diaspora_voting": true,
+  "online_voting": false
+}
