@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% block title %}{{ t.feature_eligibility }} — {{ t.app_name }}{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div class="container">
+    <h1>{{ t.feature_eligibility }}</h1>
+    <p>{{ t.feature_eligibility_desc }}</p>
+  </div>
+</div>
+
+<div class="container eligibility-layout">
+  <div class="eligibility-form-wrap">
+    <div class="card form-card">
+      <div class="form-progress">
+        <div class="form-progress-bar" id="formProgressBar" style="width: 0%"></div>
+      </div>
+
+      <form id="eligibilityForm" onsubmit="submitEligibility(event)">
+        <div class="form-group">
+          <label class="form-label">{{ t.country }} <span class="required">*</span></label>
+          <div class="search-select-wrap">
+            <input type="text" id="countrySearch" class="form-input" placeholder="Type to search country..." autocomplete="off" oninput="filterCountries(this.value)" onfocus="showDropdown()" />
+            <input type="hidden" id="selectedCountry" name="country" required />
+            <div class="country-dropdown" id="countryDropdown"></div>
+          </div>
+          <div id="selectedCountryDisplay" class="selected-display"></div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">{{ t.your_age }} <span class="required">*</span></label>
+            <input type="number" id="ageInput" name="age" class="form-input" placeholder="e.g. 25" min="1" max="120" required oninput="updateFormProgress()" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ t.citizenship }}</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="citizenship" value="true" onchange="updateFormProgress()" />
+              <span class="radio-custom"></span>
+              <span>{{ t.yes }}</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="citizenship" value="false" onchange="updateFormProgress()" />
+              <span class="radio-custom"></span>
+              <span>{{ t.no }}</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">{{ t.residency }}</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="residency" value="true" onchange="updateFormProgress()" />
+              <span class="radio-custom"></span>
+              <span>{{ t.yes }}</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="residency" value="false" onchange="updateFormProgress()" />
+              <span class="radio-custom"></span>
+              <span>{{ t.no }}</span>
+            </label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full" id="checkBtn">
+          {{ t.check_eligibility }}
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="eligibility-result-wrap">
+    <div id="resultPlaceholder" class="result-placeholder">
+      <div class="placeholder-icon">🗳️</div>
+      <h3>Your eligibility result will appear here</h3>
+      <p>Fill in the form on the left to check if you can vote in your chosen country.</p>
+    </div>
+
+    <div id="resultCard" class="card result-card" style="display:none">
+      <div id="resultStatus" class="result-status"></div>
+      <div class="result-meta">
+        <div class="meta-row">
+          <span class="meta-label">{{ t.country }}</span>
+          <span id="resultCountry" class="meta-value"></span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">{{ t.confidence }}</span>
+          <span id="resultConfidence" class="meta-value"></span>
+        </div>
+      </div>
+      <div class="result-reason" id="resultReason"></div>
+      <div class="result-notice" id="resultNotice" style="display:none"></div>
+      <div class="progress-section">
+        <div class="progress-label">{{ t.progress }}</div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="resultProgress" style="width:0%"></div>
+        </div>
+        <div class="progress-pct" id="progressPct">0%</div>
+      </div>
+      <div class="next-step-box" id="nextStepBox"></div>
+      <div class="action-items" id="actionItems"></div>
+      <div class="result-actions">
+        <a href="/voting-guide" class="btn btn-primary" id="guideBtn" style="display:none">View Voting Guide →</a>
+        <button class="btn btn-outline" onclick="resetForm()">Check Another Country</button>
+      </div>
+    </div>
+
+    <div id="loadingCard" class="card loading-card" style="display:none">
+      <div class="spinner"></div>
+      <p>{{ t.checking }}</p>
+    </div>
+
+    <div id="errorCard" class="card error-card" style="display:none">
+      <div class="error-icon">⚠️</div>
+      <h3>Error</h3>
+      <p id="errorMsg"></p>
+      <button class="btn btn-outline" onclick="resetResult()">Try Again</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+let allCountries = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadCountries();
+  const stored = localStorage.getItem('selectedCountry');
+  if (stored) { selectCountry(stored, stored.replace('_', ' ')); }
+});
+
+async function loadCountries() {
+  const r = await fetch('/api/countries');
+  const data = await r.json();
+  allCountries = data.countries;
+  renderDropdown(allCountries);
+}
+
+function renderDropdown(countries) {
+  const dd = document.getElementById('countryDropdown');
+  dd.innerHTML = countries.map(c => `
+    <div class="dropdown-item ${c.has_data ? 'has-data' : ''}" onclick="selectCountry('${c.slug}', '${c.name}')">
+      ${c.name} ${c.has_data ? '<span class="data-badge">★ Full Data</span>' : ''}
+    </div>
+  `).join('');
+}
+
+function filterCountries(q) {
+  const filtered = allCountries.filter(c => c.name.toLowerCase().includes(q.toLowerCase()));
+  renderDropdown(filtered);
+  showDropdown();
+}
+
+function showDropdown() {
+  document.getElementById('countryDropdown').classList.add('show');
+}
+
+function selectCountry(slug, name) {
+  document.getElementById('selectedCountry').value = slug;
+  document.getElementById('countrySearch').value = name;
+  document.getElementById('countryDropdown').classList.remove('show');
+  document.getElementById('selectedCountryDisplay').innerHTML = `<span class="selected-tag">🌍 ${name}</span>`;
+  localStorage.setItem('selectedCountry', slug);
+  updateFormProgress();
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-select-wrap')) {
+    document.getElementById('countryDropdown').classList.remove('show');
+  }
+});
+
+function updateFormProgress() {
+  let filled = 0;
+  if (document.getElementById('selectedCountry').value) filled++;
+  if (document.getElementById('ageInput').value) filled++;
+  if (document.querySelector('[name="citizenship"]:checked')) filled++;
+  if (document.querySelector('[name="residency"]:checked')) filled++;
+  const pct = (filled / 4) * 100;
+  document.getElementById('formProgressBar').style.width = pct + '%';
+}
+
+async function submitEligibility(e) {
+  e.preventDefault();
+  const country = document.getElementById('selectedCountry').value;
+  const age = document.getElementById('ageInput').value;
+  const citizenship = document.querySelector('[name="citizenship"]:checked')?.value;
+  const residency = document.querySelector('[name="residency"]:checked')?.value;
+
+  if (!country) { alert('Please select a country'); return; }
+  if (!age) { alert('Please enter your age'); return; }
+
+  showLoading();
+
+  const payload = {
+    country,
+    age: parseInt(age),
+    citizenship: citizenship === 'true',
+    residency: residency === 'true'
+  };
+
+  try {
+    const r = await fetch('/api/eligibility', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+      credentials: 'include'
+    });
+    const data = await r.json();
+
+    if (data.error && !data.eligible !== undefined) {
+      showError(data.error + (data.reason ? ': ' + data.reason : ''));
+      return;
+    }
+
+    localStorage.setItem('lastEligibility', JSON.stringify(data));
+    localStorage.setItem('eligibilityCountry', country);
+    showResult(data);
+  } catch(err) {
+    showError('Network error. Please try again.');
+  }
+}
+
+function showLoading() {
+  document.getElementById('resultPlaceholder').style.display = 'none';
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('errorCard').style.display = 'none';
+  document.getElementById('loadingCard').style.display = 'flex';
+}
+
+function showResult(data) {
+  document.getElementById('loadingCard').style.display = 'none';
+  const card = document.getElementById('resultCard');
+  card.style.display = 'block';
+
+  const statusEl = document.getElementById('resultStatus');
+  if (data.eligible) {
+    statusEl.innerHTML = '<div class="status-eligible"><span class="status-icon">✅</span><span>Eligible to Vote</span></div>';
+    statusEl.className = 'result-status eligible';
+    document.getElementById('guideBtn').style.display = 'inline-flex';
+  } else {
+    statusEl.innerHTML = '<div class="status-not-eligible"><span class="status-icon">❌</span><span>Not Eligible</span></div>';
+    statusEl.className = 'result-status not-eligible';
+  }
+
+  document.getElementById('resultCountry').textContent = data.country || 'N/A';
+  document.getElementById('resultConfidence').innerHTML = `<span class="badge badge-${data.confidence}">${data.confidence}</span>`;
+  document.getElementById('resultReason').textContent = data.reason || '';
+
+  const noticeEl = document.getElementById('resultNotice');
+  if (data.notice) {
+    noticeEl.textContent = '⚠️ ' + data.notice;
+    noticeEl.style.display = 'block';
+  }
+
+  const progress = data.progress || 0;
+  document.getElementById('resultProgress').style.width = progress + '%';
+  document.getElementById('progressPct').textContent = progress + '%';
+
+  if (data.next_step) {
+    document.getElementById('nextStepBox').innerHTML = `<strong>Next Step:</strong> ${data.next_step}`;
+  }
+
+  if (data.action_items && data.action_items.length) {
+    document.getElementById('actionItems').innerHTML = '<h4>Action Items</h4>' +
+      data.action_items.map(a => `
+        <div class="action-item">
+          <span class="action-num">${a.priority}</span>
+          <div>
+            <strong>${a.action}</strong>
+            <p>${a.description}</p>
+            ${a.url ? '<a href="' + a.url + '" target="_blank" class="action-link">Visit →</a>' : ''}
+          </div>
+        </div>
+      `).join('');
+  }
+
+  card.classList.add('result-animate');
+}
+
+function showError(msg) {
+  document.getElementById('loadingCard').style.display = 'none';
+  document.getElementById('errorCard').style.display = 'block';
+  document.getElementById('errorMsg').textContent = msg;
+}
+
+function resetForm() {
+  document.getElementById('eligibilityForm').reset();
+  document.getElementById('selectedCountry').value = '';
+  document.getElementById('countrySearch').value = '';
+  document.getElementById('selectedCountryDisplay').innerHTML = '';
+  document.getElementById('formProgressBar').style.width = '0%';
+  resetResult();
+}
+
+function resetResult() {
+  document.getElementById('resultCard').style.display = 'none';
+  document.getElementById('errorCard').style.display = 'none';
+  document.getElementById('resultPlaceholder').style.display = 'flex';
+}
+</script>
+{% endblock %}

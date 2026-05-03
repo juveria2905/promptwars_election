@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+{% block title %}{{ t.nav_fact_checker }} — {{ t.app_name }}{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div class="container">
+    <h1>{{ t.fact_checker_title }}</h1>
+    <p>AI-powered analysis of election claims and statements</p>
+  </div>
+</div>
+
+<div class="container fact-layout">
+  <div class="fact-form-section">
+    <div class="card">
+      <h2>Submit a Claim to Analyze</h2>
+      <p class="form-hint">Enter any statement, claim, or news headline about elections that you want to verify.</p>
+
+      <div class="form-group">
+        <label class="form-label">Country (optional)</label>
+        <input type="text" id="factCountry" class="form-input" placeholder="e.g. India, USA, UK" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">{{ t.fact_checker_placeholder }}</label>
+        <textarea id="claimInput" class="form-textarea" rows="4" placeholder="{{ t.fact_checker_placeholder }}"></textarea>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="checkFact()" id="factBtn">
+        🔍 {{ t.check_claim }}
+      </button>
+
+      <div class="example-claims">
+        <p class="examples-label">Try these examples:</p>
+        <button class="example-btn" onclick="setClaim('Voting machines are rigged in all elections')">Voting machines are rigged</button>
+        <button class="example-btn" onclick="setClaim('You need to be 21 to vote in India')">You need to be 21 to vote in India</button>
+        <button class="example-btn" onclick="setClaim('Voter registration deadline is 30 days before the election')">Registration deadline is 30 days</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fact-result-section">
+    <div id="factPlaceholder" class="result-placeholder">
+      <div class="placeholder-icon">🔍</div>
+      <h3>Analysis result will appear here</h3>
+      <p>Enter an election claim and click "Check Claim" to analyze it for potential misinformation.</p>
+    </div>
+
+    <div id="factLoading" class="card loading-card" style="display:none">
+      <div class="spinner"></div>
+      <p>Analyzing claim with AI...</p>
+    </div>
+
+    <div id="factResult" class="card fact-result-card" style="display:none">
+      <div class="risk-header">
+        <div class="risk-score-display">
+          <div class="risk-circle" id="riskCircle">
+            <span id="riskNumber">0</span>
+            <small>Risk</small>
+          </div>
+        </div>
+        <div class="risk-info">
+          <div class="risk-classification" id="riskClassification"></div>
+          <div class="verdict-badge" id="verdictBadge"></div>
+        </div>
+      </div>
+
+      <div class="risk-bar-section">
+        <div class="risk-bar-track">
+          <div class="risk-bar-fill" id="riskBarFill" style="width:0%"></div>
+        </div>
+        <div class="risk-bar-labels">
+          <span>Safe</span>
+          <span>Low Risk</span>
+          <span>Medium Risk</span>
+          <span>High Risk</span>
+        </div>
+      </div>
+
+      <div class="fact-section">
+        <h4>{{ t.explanation }}</h4>
+        <p id="factExplanation"></p>
+      </div>
+
+      <div class="fact-section">
+        <h4>Where to Verify</h4>
+        <p id="factSource"></p>
+      </div>
+
+      <div class="fact-actions">
+        <button class="btn btn-outline" onclick="resetFact()">Check Another Claim</button>
+        <a href="/assistant" class="btn btn-primary">Ask AI Assistant →</a>
+      </div>
+    </div>
+
+    <div id="factError" class="card error-card" style="display:none">
+      <div class="error-icon">⚠️</div>
+      <p id="factErrorMsg"></p>
+      <button class="btn btn-outline" onclick="resetFact()">Try Again</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+function setClaim(text) {
+  document.getElementById('claimInput').value = text;
+}
+
+async function checkFact() {
+  const claim = document.getElementById('claimInput').value.trim();
+  const country = document.getElementById('factCountry').value.trim();
+  const lang = window.VOTEIQ.lang;
+
+  if (!claim) { alert('Please enter a claim to check'); return; }
+
+  showFactLoading();
+  document.getElementById('factBtn').disabled = true;
+
+  try {
+    const r = await fetch('/api/fact-check', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ claim, country, language: lang }),
+      credentials: 'include'
+    });
+    const data = await r.json();
+
+    if (!r.ok || data.error) {
+      showFactError(data.error || 'Analysis failed');
+      return;
+    }
+
+    showFactResult(data);
+  } catch(e) {
+    showFactError('Network error. Please try again.');
+  } finally {
+    document.getElementById('factBtn').disabled = false;
+  }
+}
+
+function showFactLoading() {
+  document.getElementById('factPlaceholder').style.display = 'none';
+  document.getElementById('factResult').style.display = 'none';
+  document.getElementById('factError').style.display = 'none';
+  document.getElementById('factLoading').style.display = 'flex';
+}
+
+function showFactResult(data) {
+  document.getElementById('factLoading').style.display = 'none';
+  const card = document.getElementById('factResult');
+  card.style.display = 'block';
+
+  const score = data.risk_score || 0;
+  const color = data.color || (score > 70 ? 'red' : score > 40 ? 'orange' : score > 20 ? 'yellow' : 'green');
+
+  const circle = document.getElementById('riskCircle');
+  document.getElementById('riskNumber').textContent = score;
+  circle.className = 'risk-circle risk-' + color;
+
+  const classMap = {
+    'SAFE': { label: '✅ SAFE', cls: 'badge-green' },
+    'LOW_RISK': { label: '🟡 LOW RISK', cls: 'badge-yellow' },
+    'MEDIUM_RISK': { label: '🟠 MEDIUM RISK', cls: 'badge-orange' },
+    'HIGH_RISK': { label: '🔴 HIGH RISK', cls: 'badge-red' },
+  };
+  const cls = classMap[data.classification] || { label: data.classification, cls: 'badge-gray' };
+  document.getElementById('riskClassification').innerHTML = `<span class="badge ${cls.cls} badge-lg">${cls.label}</span>`;
+
+  const verdictColors = {
+    'TRUE': 'badge-green',
+    'FALSE': 'badge-red',
+    'MISLEADING': 'badge-orange',
+    'UNVERIFIED': 'badge-gray',
+    'CONTEXT_NEEDED': 'badge-yellow'
+  };
+  const verdict = data.verdict || 'UNVERIFIED';
+  document.getElementById('verdictBadge').innerHTML = `<span class="badge ${verdictColors[verdict] || 'badge-gray'}">Verdict: ${verdict}</span>`;
+
+  const fill = document.getElementById('riskBarFill');
+  fill.style.width = score + '%';
+  fill.className = 'risk-bar-fill fill-' + color;
+
+  document.getElementById('factExplanation').textContent = data.explanation || 'No explanation available.';
+  document.getElementById('factSource').textContent = data.source || 'Check your national electoral authority website.';
+}
+
+function showFactError(msg) {
+  document.getElementById('factLoading').style.display = 'none';
+  document.getElementById('factError').style.display = 'block';
+  document.getElementById('factErrorMsg').textContent = msg;
+}
+
+function resetFact() {
+  document.getElementById('factResult').style.display = 'none';
+  document.getElementById('factError').style.display = 'none';
+  document.getElementById('factPlaceholder').style.display = 'flex';
+  document.getElementById('claimInput').value = '';
+}
+</script>
+{% endblock %}

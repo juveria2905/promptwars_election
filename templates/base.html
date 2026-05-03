@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ t.app_name }} — {{ t.tagline }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="lang-{{ lang }}">
+
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="/" class="nav-brand">
+      <span class="brand-icon">🗳️</span>
+      <span class="brand-text">{{ t.app_name }}</span>
+    </a>
+
+    <div class="nav-links">
+      <a href="/dashboard" class="nav-link {% if request.path == '/dashboard' %}active{% endif %}">{{ t.nav_dashboard }}</a>
+      <a href="/eligibility" class="nav-link {% if request.path == '/eligibility' %}active{% endif %}">{{ t.nav_eligibility }}</a>
+      <a href="/voting-guide" class="nav-link {% if request.path == '/voting-guide' %}active{% endif %}">{{ t.nav_voting_guide }}</a>
+      <a href="/fact-checker" class="nav-link {% if request.path == '/fact-checker' %}active{% endif %}">{{ t.nav_fact_checker }}</a>
+      <a href="/assistant" class="nav-link {% if request.path == '/assistant' %}active{% endif %}">{{ t.nav_assistant }}</a>
+    </div>
+
+    <div class="nav-actions">
+      <div class="language-toggle">
+        <button class="lang-btn {% if lang == 'en' %}active{% endif %}" onclick="setLanguage('en')">EN</button>
+        <button class="lang-btn {% if lang == 'hi' %}active{% endif %}" onclick="setLanguage('hi')">हिं</button>
+      </div>
+
+      {% if username %}
+        <span class="nav-user">👤 {{ username }}</span>
+        <button class="btn btn-outline" onclick="logout()">{{ t.nav_logout }}</button>
+      {% else %}
+        <a href="/login" class="btn btn-outline">{{ t.nav_login }}</a>
+        <a href="/signup" class="btn btn-primary">{{ t.nav_signup }}</a>
+      {% endif %}
+
+      <button class="hamburger" id="hamburger" onclick="toggleMenu()">☰</button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="/dashboard" class="mobile-link">{{ t.nav_dashboard }}</a>
+    <a href="/eligibility" class="mobile-link">{{ t.nav_eligibility }}</a>
+    <a href="/voting-guide" class="mobile-link">{{ t.nav_voting_guide }}</a>
+    <a href="/fact-checker" class="mobile-link">{{ t.nav_fact_checker }}</a>
+    <a href="/assistant" class="mobile-link">{{ t.nav_assistant }}</a>
+    {% if username %}
+      <button class="mobile-link" onclick="logout()">{{ t.nav_logout }}</button>
+    {% else %}
+      <a href="/login" class="mobile-link">{{ t.nav_login }}</a>
+      <a href="/signup" class="mobile-link">{{ t.nav_signup }}</a>
+    {% endif %}
+  </div>
+</nav>
+
+<main class="main-content">
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>🗳️ {{ t.app_name }} — {{ t.tagline }}</span>
+    <span class="footer-note">For informational purposes only. Always verify with your official electoral authority.</span>
+  </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script>
+window.VOTEIQ = {
+  lang: '{{ lang }}',
+  country: '{{ session_country }}',
+  username: '{{ username }}'
+};
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

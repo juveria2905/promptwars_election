@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% block title %}{{ t.login_title }} — {{ t.app_name }}{% endblock %}
+{% block content %}
+
+<div class="auth-layout">
+  <div class="auth-card card">
+    <div class="auth-header">
+      <div class="auth-logo">🗳️</div>
+      <h1>{{ t.login_title }}</h1>
+      <p>Welcome back to VoteIQ</p>
+    </div>
+
+    <div id="authError" class="error-banner" style="display:none"></div>
+
+    <form id="loginForm" onsubmit="submitLogin(event)">
+      <div class="form-group">
+        <label class="form-label">{{ t.username }}</label>
+        <input type="text" id="loginUsername" name="username" class="form-input" placeholder="Enter your username" required autocomplete="username" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">{{ t.password }}</label>
+        <div class="input-with-toggle">
+          <input type="password" id="loginPassword" name="password" class="form-input" placeholder="Enter your password" required autocomplete="current-password" />
+          <button type="button" class="toggle-pw" onclick="togglePassword('loginPassword')">👁</button>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full" id="loginBtn">
+        {{ t.login_btn }}
+      </button>
+    </form>
+
+    <div class="auth-divider">or</div>
+
+    <p class="auth-switch">Don't have an account? <a href="/signup">{{ t.nav_signup }}</a></p>
+
+    <div class="auth-demo">
+      <p class="demo-label">Quick demo access:</p>
+      <button class="btn btn-outline btn-sm" onclick="fillDemo()">Use Demo Account</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+function fillDemo() {
+  document.getElementById('loginUsername').value = 'demo';
+  document.getElementById('loginPassword').value = 'demo123';
+}
+
+async function submitLogin(e) {
+  e.preventDefault();
+  const username = document.getElementById('loginUsername').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  const btn = document.getElementById('loginBtn');
+
+  btn.disabled = true;
+  btn.textContent = 'Logging in...';
+
+  try {
+    const r = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+      credentials: 'include'
+    });
+    const data = await r.json();
+
+    if (data.success) {
+      window.location.href = '/dashboard';
+    } else {
+      showAuthError(data.error || 'Login failed');
+    }
+  } catch(e) {
+    showAuthError('Network error. Please try again.');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '{{ t.login_btn }}';
+  }
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+}
+
+function togglePassword(id) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+</script>
+{% endblock %}

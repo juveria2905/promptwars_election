@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}{{ t.app_name }} — {{ t.hero_title }}{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <div class="hero-badge">🌍 195+ Countries Supported</div>
+    <h1 class="hero-title">{{ t.hero_title }}</h1>
+    <p class="hero-subtitle">{{ t.hero_subtitle }}</p>
+    <div class="hero-actions">
+      <a href="/eligibility" class="btn btn-primary btn-lg">{{ t.get_started }}</a>
+      <a href="/voting-guide" class="btn btn-glass btn-lg">{{ t.nav_voting_guide }}</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat">
+        <span class="stat-number">195+</span>
+        <span class="stat-label">{{ t.countries_supported }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">2</span>
+        <span class="stat-label">{{ t.languages_supported }}</span>
+      </div>
+      <div class="stat">
+        <span class="stat-number">100%</span>
+        <span class="stat-label">{{ t.accuracy }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="globe-container">
+      <div class="globe">🌍</div>
+      <div class="orbit orbit-1"><span class="orbit-dot">🗳️</span></div>
+      <div class="orbit orbit-2"><span class="orbit-dot">✅</span></div>
+      <div class="orbit orbit-3"><span class="orbit-dot">🔍</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="features">
+  <div class="container">
+    <h2 class="section-title">Everything You Need to Vote Confidently</h2>
+    <div class="features-grid">
+      <a href="/eligibility" class="feature-card">
+        <div class="feature-icon">✅</div>
+        <h3>{{ t.feature_eligibility }}</h3>
+        <p>{{ t.feature_eligibility_desc }}</p>
+        <span class="feature-arrow">→</span>
+      </a>
+      <a href="/voting-guide" class="feature-card">
+        <div class="feature-icon">📋</div>
+        <h3>{{ t.feature_guide }}</h3>
+        <p>{{ t.feature_guide_desc }}</p>
+        <span class="feature-arrow">→</span>
+      </a>
+      <a href="/fact-checker" class="feature-card">
+        <div class="feature-icon">🔍</div>
+        <h3>{{ t.feature_fact }}</h3>
+        <p>{{ t.feature_fact_desc }}</p>
+        <span class="feature-arrow">→</span>
+      </a>
+      <a href="/assistant" class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>{{ t.feature_ai }}</h3>
+        <p>{{ t.feature_ai_desc }}</p>
+        <span class="feature-arrow">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="countries-section">
+  <div class="container">
+    <h2 class="section-title">Works for Every Country</h2>
+    <p class="section-subtitle">Detailed data for major countries, intelligent fallback for all others</p>
+    <div class="countries-showcase">
+      <span class="country-tag has-data">🇮🇳 India</span>
+      <span class="country-tag has-data">🇺🇸 United States</span>
+      <span class="country-tag has-data">🇬🇧 United Kingdom</span>
+      <span class="country-tag has-data">🇨🇦 Canada</span>
+      <span class="country-tag has-data">🇦🇺 Australia</span>
+      <span class="country-tag has-data">🇩🇪 Germany</span>
+      <span class="country-tag fallback">🇫🇷 France</span>
+      <span class="country-tag fallback">🇯🇵 Japan</span>
+      <span class="country-tag fallback">🇧🇷 Brazil</span>
+      <span class="country-tag fallback">🇳🇬 Nigeria</span>
+      <span class="country-tag fallback">🇿🇦 South Africa</span>
+      <span class="country-tag fallback">+ 184 more</span>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="dot green"></span> Detailed local data</span>
+      <span class="legend-item"><span class="dot gray"></span> Global fallback guidance</span>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card">
+      <h2>Ready to check your eligibility?</h2>
+      <p>Select your country and get instant, rule-based eligibility results in seconds.</p>
+      <a href="/eligibility" class="btn btn-primary btn-lg">Check Now — It's Free</a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

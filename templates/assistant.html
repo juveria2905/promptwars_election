@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block title %}{{ t.nav_assistant }} — {{ t.app_name }}{% endblock %}
+{% block content %}
+
+<div class="assistant-layout">
+  <div class="chat-sidebar">
+    <div class="sidebar-header">
+      <h2>{{ t.nav_assistant }}</h2>
+      <p>Ask anything about elections</p>
+    </div>
+
+    <div class="chat-context">
+      <label class="form-label">Country Context</label>
+      <input type="text" id="assistantCountry" class="form-input form-input-sm" placeholder="e.g. India, USA..." value="{{ session_country }}" />
+      <div class="context-hint">This helps the AI give country-specific answers</div>
+    </div>
+
+    <div class="suggested-questions">
+      <p class="suggestions-label">Suggested Questions</p>
+      <button class="suggestion-btn" onclick="askSuggestion('How do I register to vote?')">How do I register to vote?</button>
+      <button class="suggestion-btn" onclick="askSuggestion('What ID do I need to vote?')">What ID do I need to vote?</button>
+      <button class="suggestion-btn" onclick="askSuggestion('What is the minimum voting age?')">What is the minimum voting age?</button>
+      <button class="suggestion-btn" onclick="askSuggestion('Can I vote if I live abroad?')">Can I vote if I live abroad?</button>
+      <button class="suggestion-btn" onclick="askSuggestion('How does the electoral system work?')">How does the electoral system work?</button>
+      <button class="suggestion-btn" onclick="askSuggestion('What happens if I miss the registration deadline?')">What if I miss registration deadline?</button>
+    </div>
+
+    <button class="btn btn-outline btn-full btn-sm" onclick="clearChat()">Clear Chat</button>
+  </div>
+
+  <div class="chat-main">
+    <div class="chat-messages" id="chatMessages">
+      <div class="message bot-message">
+        <div class="message-avatar">🤖</div>
+        <div class="message-bubble">
+          <p>Hello! I'm VoteIQ, your election information assistant. I can answer questions about voting procedures, voter registration, electoral systems, and voter rights for countries around the world.</p>
+          <p>What would you like to know?</p>
+          <small class="message-disclaimer">Note: I provide general information only. Always verify with your official electoral authority.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <div class="chat-input-row">
+        <textarea id="chatInput" class="chat-input" placeholder="{{ t.ask_anything }}" rows="1" onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="chat-send-btn" onclick="sendMessage()" id="sendBtn">
+          <span>{{ t.send }}</span>
+          <span class="send-icon">→</span>
+        </button>
+      </div>
+      <p class="chat-disclaimer">VoteIQ provides factual information only. Never asks for personal voting decisions.</p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+let chatHistory = [];
+let isTyping = false;
+
+function askSuggestion(q) {
+  document.getElementById('chatInput').value = q;
+  sendMessage();
+}
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 150) + 'px';
+}
+
+async function sendMessage() {
+  if (isTyping) return;
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+
+  addMessage('user', msg);
+  chatHistory.push({ role: 'user', content: msg });
+
+  showTyping();
+  document.getElementById('sendBtn').disabled = true;
+  isTyping = true;
+
+  const country = document.getElementById('assistantCountry').value.trim();
+  const lang = window.VOTEIQ.lang;
+
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: msg,
+        country: country,
+        language: lang,
+        history: chatHistory.slice(-6)
+      }),
+      credentials: 'include'
+    });
+    const data = await r.json();
+
+    removeTyping();
+    if (data.success && data.response) {
+      addMessage('bot', data.response);
+      chatHistory.push({ role: 'assistant', content: data.response });
+    } else {
+      addMessage('bot', 'I apologize, but I\'m temporarily unavailable. Please try again in a moment.');
+    }
+  } catch(e) {
+    removeTyping();
+    addMessage('bot', 'Network error. Please check your connection and try again.');
+  } finally {
+    isTyping = false;
+    document.getElementById('sendBtn').disabled = false;
+  }
+}
+
+function addMessage(role, content) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `message ${role === 'user' ? 'user-message' : 'bot-message'}`;
+
+  const formatted = content.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+  if (role === 'user') {
+    div.innerHTML = `
+      <div class="message-bubble user-bubble">
+        <p>${formatted}</p>
+      </div>
+      <div class="message-avatar user-avatar">👤</div>
+    `;
+  } else {
+    div.innerHTML = `
+      <div class="message-avatar">🤖</div>
+      <div class="message-bubble">
+        <p>${formatted}</p>
+      </div>
+    `;
+  }
+
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  div.classList.add('message-enter');
+}
+
+function showTyping() {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'message bot-message typing-indicator';
+  div.id = 'typingIndicator';
+  div.innerHTML = `
+    <div class="message-avatar">🤖</div>
+    <div class="message-bubble typing-bubble">
+      <span></span><span></span><span></span>
+    </div>
+  `;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typingIndicator');
+  if (el) el.remove();
+}
+
+function clearChat() {
+  chatHistory = [];
+  document.getElementById('chatMessages').innerHTML = `
+    <div class="message bot-message">
+      <div class="message-avatar">🤖</div>
+      <div class="message-bubble">
+        <p>Chat cleared. How can I help you with election information?</p>
+      </div>
+    </div>
+  `;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}{{ t.nav_voting_guide }} — {{ t.app_name }}{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div class="container">
+    <h1>{{ t.voting_guide }}</h1>
+    <p>Step-by-step voting instructions for any country</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="guide-search-bar card">
+    <label class="form-label">Select a country to view its voting guide</label>
+    <div class="guide-search-row">
+      <div class="search-select-wrap" style="flex:1">
+        <input type="text" id="guideCountrySearch" class="form-input" placeholder="Search country..." oninput="filterGuideCountries(this.value)" onfocus="showGuideDropdown()" autocomplete="off" />
+        <input type="hidden" id="guideSelectedCountry" />
+        <div class="country-dropdown" id="guideCountryDropdown"></div>
+      </div>
+      <button class="btn btn-primary" onclick="loadGuide()">Load Guide</button>
+    </div>
+  </div>
+
+  <div id="guidePlaceholder" class="guide-placeholder">
+    <div class="placeholder-icon">📋</div>
+    <h3>Select a country to view its voting guide</h3>
+    <p>We have detailed guides for major countries and general guidance for all others.</p>
+  </div>
+
+  <div id="guideLoading" class="card loading-card" style="display:none">
+    <div class="spinner"></div>
+    <p>Loading voting guide...</p>
+  </div>
+
+  <div id="guideContent" style="display:none">
+    <div class="guide-header card">
+      <div class="guide-country-info">
+        <h2 id="guideName"></h2>
+        <div class="guide-badges" id="guideBadges"></div>
+      </div>
+      <div class="guide-authority">
+        <span class="authority-label">{{ t.electoral_authority }}</span>
+        <a id="guideAuthorityLink" href="#" target="_blank" rel="noopener" class="authority-name"></a>
+      </div>
+    </div>
+
+    <div id="fallbackNotice" class="fallback-banner" style="display:none">
+      <span>⚠️</span>
+      <span id="fallbackMsg"></span>
+    </div>
+
+    <div class="guide-grid">
+      <div class="card guide-section">
+        <div class="guide-section-header">
+          <span class="section-icon">📝</span>
+          <h3>{{ t.registration_steps }}</h3>
+        </div>
+        <ol class="steps-list" id="registrationSteps"></ol>
+      </div>
+
+      <div class="card guide-section">
+        <div class="guide-section-header">
+          <span class="section-icon">🗳️</span>
+          <h3>{{ t.voting_steps }}</h3>
+        </div>
+        <ol class="steps-list" id="votingSteps"></ol>
+      </div>
+    </div>
+
+    <div class="guide-details card">
+      <h3>Key Details</h3>
+      <div class="details-grid" id="detailsGrid"></div>
+    </div>
+
+    <div class="guide-notes card" id="guideNotesCard" style="display:none">
+      <h3>Important Notes</h3>
+      <p id="guideNotes"></p>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+let guideCountries = [];
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadGuideCountries();
+  const stored = localStorage.getItem('eligibilityCountry') || localStorage.getItem('selectedCountry');
+  if (stored) {
+    document.getElementById('guideSelectedCountry').value = stored;
+    const name = stored.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+    document.getElementById('guideCountrySearch').value = name;
+    loadGuide();
+  }
+});
+
+async function loadGuideCountries() {
+  const r = await fetch('/api/countries');
+  const data = await r.json();
+  guideCountries = data.countries;
+  renderGuideDropdown(guideCountries);
+}
+
+function renderGuideDropdown(countries) {
+  const dd = document.getElementById('guideCountryDropdown');
+  dd.innerHTML = countries.map(c => `
+    <div class="dropdown-item ${c.has_data ? 'has-data' : ''}" onclick="selectGuideCountry('${c.slug}', '${c.name}')">
+      ${c.name} ${c.has_data ? '<span class="data-badge">★ Full Data</span>' : ''}
+    </div>
+  `).join('');
+}
+
+function filterGuideCountries(q) {
+  const filtered = guideCountries.filter(c => c.name.toLowerCase().includes(q.toLowerCase()));
+  renderGuideDropdown(filtered);
+  showGuideDropdown();
+}
+
+function showGuideDropdown() {
+  document.getElementById('guideCountryDropdown').classList.add('show');
+}
+
+function selectGuideCountry(slug, name) {
+  document.getElementById('guideSelectedCountry').value = slug;
+  document.getElementById('guideCountrySearch').value = name;
+  document.getElementById('guideCountryDropdown').classList.remove('show');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.search-select-wrap')) {
+    document.getElementById('guideCountryDropdown').classList.remove('show');
+  }
+});
+
+async function loadGuide() {
+  const country = document.getElementById('guideSelectedCountry').value;
+  if (!country) { alert('Please select a country'); return; }
+
+  document.getElementById('guidePlaceholder').style.display = 'none';
+  document.getElementById('guideContent').style.display = 'none';
+  document.getElementById('guideLoading').style.display = 'flex';
+
+  try {
+    const r = await fetch('/api/voting-guide?country=' + encodeURIComponent(country));
+    const data = await r.json();
+
+    document.getElementById('guideLoading').style.display = 'none';
+    renderGuide(data);
+    document.getElementById('guideContent').style.display = 'block';
+    localStorage.setItem('selectedCountry', country);
+  } catch(e) {
+    document.getElementById('guideLoading').style.display = 'none';
+    document.getElementById('guidePlaceholder').style.display = 'flex';
+    alert('Failed to load guide. Please try again.');
+  }
+}
+
+function renderGuide(data) {
+  document.getElementById('guideName').textContent = data.country;
+
+  const badges = [];
+  if (data.compulsory_voting) badges.push('<span class="badge badge-red">Compulsory Voting</span>');
+  if (data.postal_voting) badges.push('<span class="badge badge-blue">Postal Voting</span>');
+  if (data.online_voting) badges.push('<span class="badge badge-green">Online Voting</span>');
+  if (data.diaspora_voting) badges.push('<span class="badge badge-purple">Diaspora Voting</span>');
+  document.getElementById('guideBadges').innerHTML = badges.join('');
+
+  const authLink = document.getElementById('guideAuthorityLink');
+  authLink.textContent = data.authority;
+  authLink.href = data.authority_website || '#';
+
+  if (data.is_fallback && data.notice) {
+    document.getElementById('fallbackNotice').style.display = 'flex';
+    document.getElementById('fallbackMsg').textContent = data.notice;
+  } else {
+    document.getElementById('fallbackNotice').style.display = 'none';
+  }
+
+  const regList = document.getElementById('registrationSteps');
+  if (data.registration_steps && data.registration_steps.length) {
+    regList.innerHTML = data.registration_steps.map((s, i) => `
+      <li class="step-item-li">
+        <span class="step-num">${i + 1}</span>
+        <span>${s}</span>
+      </li>
+    `).join('');
+  } else {
+    regList.innerHTML = '<li class="step-item-li"><span>Contact your electoral authority for registration information.</span></li>';
+  }
+
+  const voteList = document.getElementById('votingSteps');
+  if (data.voting_steps && data.voting_steps.length) {
+    voteList.innerHTML = data.voting_steps.map((s, i) => `
+      <li class="step-item-li">
+        <span class="step-num">${i + 1}</span>
+        <span>${s}</span>
+      </li>
+    `).join('');
+  } else {
+    voteList.innerHTML = '<li class="step-item-li"><span>Contact your electoral authority for voting instructions.</span></li>';
+  }
+
+  const grid = document.getElementById('detailsGrid');
+  const details = [
+    { label: 'Minimum Age', value: data.min_age + ' years' },
+    { label: 'ID Required', value: data.id_required ? 'Yes' : 'No' },
+    { label: 'Voting Hours', value: data.voting_hours || 'Varies' },
+    { label: 'Registration', value: data.registration_required ? 'Required' : 'Automatic' },
+    { label: 'Compulsory', value: data.compulsory_voting ? 'Yes (Mandatory)' : 'No' },
+  ];
+  grid.innerHTML = details.map(d => `
+    <div class="detail-item">
+      <span class="detail-label">${d.label}</span>
+      <strong class="detail-value">${d.value}</strong>
+    </div>
+  `).join('');
+
+  if (data.notes) {
+    document.getElementById('guideNotesCard').style.display = 'block';
+    document.getElementById('guideNotes').textContent = data.notes;
+  }
+}
+</script>
+{% endblock %}
